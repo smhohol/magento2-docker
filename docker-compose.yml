@@ -1,0 +1,52 @@
+version: '3.8'
+services:
+
+    nginx:
+        build:
+            context: ./docker/development
+            dockerfile: nginx.docker
+        volumes:
+            - ./:/app
+        depends_on:
+            - php-fpm
+        ports:
+            - "80:80"
+
+    php-fpm:
+        build:
+            context: ./docker/development
+            dockerfile: php-fpm.docker
+        volumes:
+            - ./:/app
+        environment:
+            PHP_IDE_CONFIG: "serverName=Docker"
+        depends_on:
+            - mariadb
+
+    mariadb:
+        image: mariadb:10.4
+        volumes:
+            - mariadb:/var/lib/mysql
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: password
+            MYSQL_DATABASE: magento
+            MYSQL_USER: magento
+            MYSQL_PASSWORD: password
+        ports:
+            - "33061:3306"
+
+#    elasticsearch:
+#      image: elasticsearch:7.11.2
+#      ports:
+#        - "9200:9200"
+#        - "9300:9300"
+
+    mailer:
+        image: mailhog/mailhog
+        restart: unless-stopped
+        ports:
+            - "8081:8025"
+
+volumes:
+    mariadb:
